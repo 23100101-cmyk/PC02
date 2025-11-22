@@ -1,15 +1,22 @@
-import LoginPage from 'pages/LoginPage.vue'
-//import DigimonPage from 'pages/DigimonPage.vue' // esta la harás para el listado
-
 const routes = [
   {
     path: '/',
-    component: LoginPage,
+    component: () => import('layouts/MainLayout.vue'),
+    children: [
+      {
+        path: '',
+        component: () => import('pages/LoginPage.vue'),
+      },
+      {
+        path: 'digimons',
+        component: () => import('pages/DigimonPage.vue'),
+      },
+    ],
   },
-  // {
-  //   path: '/digimons',
-  //   component: DigimonPage,
-  // },
+  {
+    path: '/:catchAll(.*)*',
+    component: () => import('pages/ErrorNotFound.vue'),
+  },
 ]
 
 export default routes
