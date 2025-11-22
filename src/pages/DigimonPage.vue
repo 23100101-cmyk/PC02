@@ -1,55 +1,78 @@
 <template>
-  <q-page padding>
-    <h2 class="text-h5 q-mb-md">Listado de Digimons</h2>
+  <q-page class="q-pa-md">
+    <div class="row q-gutter-md items-center">
+      <!-- Buscar por nombre -->
+      <div class="col-12 col-md-4">
+        <q-input filled v-model="searchName" label="Buscar por nombre" @input="applyFilters" />
+      </div>
 
-    <!-- FILTROS -->
-    <DigimonFilter :filters="filters" @update:filters="filters = $event" />
+      <!-- Buscar por nivel -->
+      <div class="col-12 col-md-4">
+        <q-select
+          filled
+          v-model="searchLevel"
+          :options="levels"
+          label="Filtrar por nivel"
+          clearable
+          @update:model-value="applyFilters"
+        />
+      </div>
+    </div>
 
-    <!-- LISTA -->
-    <DigimonList :digimons="filteredDigimons" />
+    <div class="row q-gutter-md q-mt-md">
+      <div
+        v-for="digi in filteredDigimon"
+        :key="digi.name"
+        class="col-12 col-sm-6 col-md-4 col-lg-3"
+      >
+        <q-card bordered>
+          <q-img :src="digi.img" :alt="digi.name" ratio="1" />
+
+          <q-card-section>
+            <div class="text-h6">{{ digi.name }}</div>
+            <div class="text-subtitle2">Nivel: {{ digi.level }}</div>
+          </q-card-section>
+        </q-card>
+      </div>
+    </div>
   </q-page>
 </template>
 
 <script>
-import { ref, computed, onMounted } from 'vue'
-import DigimonFilter from 'components/DigimonFilter.vue'
-import DigimonList from 'components/DigimonList.vue'
+import axios from 'axios'
 
 export default {
-  components: {
-    DigimonFilter,
-    DigimonList,
+  data() {
+    return {
+      digimon: [],
+      filteredDigimon: [],
+
+      searchName: '',
+      searchLevel: null,
+
+      levels: [], // niveles únicos
+    }
   },
 
-  setup() {
-    const digimons = ref([])
-    const filters = ref({
-      name: '',
-      level: '',
-    })
+  async created() {
+    const res = await axios.get('https://digimon-api.vercel.app/api/digimon')
+    this.digimon = res.data
+    this.filteredDigimon = res.data
 
-    const loadDigimons = async () => {
-      const res = await fetch('https://digimon-api.vercel.app/api/digimon')
-      digimons.value = await res.json()
-    }
+    // obtener niveles únicos
+    this.levels = [...new Set(res.data.map((d) => d.level))]
+  },
 
-    const filteredDigimons = computed(() => {
-      return digimons.value.filter((d) => {
-        const matchName = d.name.toLowerCase().includes(filters.value.name.toLowerCase())
+  methods: {
+    applyFilters() {
+      this.filteredDigimon = this.digimon.filter((digi) => {
+        const matchName = digi.name.toLowerCase().includes(this.searchName.toLowerCase())
 
-        const matchLevel = filters.value.level === '' || d.level === filters.value.level
+        const matchLevel = !this.searchLevel || digi.level === this.searchLevel
 
         return matchName && matchLevel
       })
-    })
-
-    onMounted(loadDigimons)
-
-    return {
-      digimons,
-      filters,
-      filteredDigimons,
-    }
+    },
   },
 }
 </script>
