@@ -1,16 +1,27 @@
+import LoginPage from "pages/LoginPage.vue";
+import DigimonPage from "pages/DigimonPage.vue";
+
 const routes = [
   {
-    path: '/',
-    component: () => import('layouts/MainLayout.vue'),
-    children: [{ path: '', component: () => import('pages/IndexPage.vue') }],
+    path: "/",
+    component: () => import("layouts/MainLayout.vue"),
+    children: [
+      {
+        path: "",
+        component: LoginPage
+      },
+      {
+        path: "digimons",
+        component: DigimonPage
+      }
+    ]
   },
 
-  // Always leave this as last one,
-  // but you can also remove it
+  // Ruta 404 (esto no se toca)
   {
-    path: '/:catchAll(.*)*',
-    component: () => import('pages/ErrorNotFound.vue'),
-  },
-]
+    path: "/:catchAll(.*)*",
+    component: () => import("pages/ErrorNotFound.vue")
+  }
+];
 
-export default routes
+export default routes;
